@@ -27,7 +27,7 @@ int main()
         printf("Error: failed to map framebuffer device to memory.\n");
         return -1; 
     } 
-    memcpy(fbfd,buff,BUFFERSIZE);  
+    memcpy(fbp,buff,BUFFERSIZE);  
     return 0;
 }
 
