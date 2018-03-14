@@ -76,7 +76,7 @@ int main(int argc, char **argv)
      arg[1] = 0; 
      arg[2] = 0; 
      arg[3] = 0; 
- //   ioctl(dispfh,DISP_MEM_SELIDX,(void*)arg); 
+    ioctl(dispfh,DISP_MEM_GETADR,(void*)arg); 
      mem = (int)mmap(NULL, fb_width*fb_height*4*buffer_num, PROT_READ | PROT_WRITE, MAP_SHARED, dispfh, 0L); 
      if(mem == 0) 
      { 
