@@ -40,9 +40,9 @@ int main(int argc, char **argv)
      unsigned int width = 1280; 
      unsigned int height = 800; 
      unsigned int ret = 0; 
-     unsigned int screen_id = 0; 
-     unsigned int layer_id = 0; 
-     unsigned int mem_id = 0; 
+     unsigned int screen_id = 1; 
+     unsigned int layer_id = 1; 
+     unsigned int mem_id = 1; 
      unsigned int buffer_num = 2; 
      unsigned int dispfh; 
      unsigned int fb_width,fb_height; 
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 
 
      arg[0] = screen_id; 
-     width = ioctl(dispfh,DISP_GET_SCN_WIDTH,(void*)arg); 
+    width = ioctl(dispfh,DISP_GET_SCN_WIDTH,(void*)arg); 
      height = ioctl(dispfh,DISP_GET_SCN_HEIGHT,(void*)arg); 
      printf("screen_size=%d x %d \n", width, height); 
     
@@ -131,8 +131,9 @@ int main(int argc, char **argv)
     if(0 != ret) 
     printf("fail to enable layer\n"); 
   
+   printf("open layer \n");
     sleep(5); 
-
+#if 0
     arg[0] = screen_id; 
     arg[1] = layer_id; 
     arg[2] = 0; 
@@ -140,7 +141,7 @@ int main(int argc, char **argv)
     ret = ioctl(dispfh,DISP_LAYER_DISABLE,(void*)arg); 
     if(0 != ret) 
     printf("fail to enable layer\n"); 
- 
+ #endif
     memset(&info, 0, sizeof(struct disp_layer_info)); 
     arg[0] = screen_id; 
     arg[1] = layer_id; 
@@ -150,6 +151,7 @@ int main(int argc, char **argv)
     ioctl(dispfh,DISP_MEM_RELEASE,(void*)arg); 
 
     close(dispfh); 
+   printf("close layer \n");
     return 0; 
 }
 
