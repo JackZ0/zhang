@@ -9,3 +9,6 @@
 3、rtsp://218.204.223.237:554/live/1/0547424F573B085C/gsfp90ef4k0a6iap.sdp
 
 好像是个车站吧
+
+4、香港卫视：rtmp://live.hkstv.hk.lxdns.com/live/hks
+
