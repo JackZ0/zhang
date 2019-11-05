@@ -1,0 +1,153 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+using namespace cv;
+using namespace std;
+using std::vector;
+
+int minh,maxh,mins,maxs,minv,maxv;
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+
+    //Mat img = imread(":/new/label/img/4.jpg");
+    Mat img = imread("F://qtpractise//pic//test1//img//6.png");
+    QImage Img;
+    Mat fhsv,special;
+    cvtColor(img,fhsv,COLOR_BGR2HSV);   //将图像转换为HSV模型
+    deal('L');
+    inRange(fhsv,Scalar(minh,mins,minv),Scalar(maxh,maxs,maxv),special);
+    imshow("ABC",special);
+
+
+    vector<Mat>channels;
+    split(img,channels);//通道分离
+
+
+//    Mat blue=channels.at(0);
+//    Mat green=channels.at(1);
+//    Mat red=channels.at(2);
+
+//    threshold(blue,blue,200,255,THRESH_BINARY);//二值化：大于200的赋值255，小于200的赋值0
+//    threshold(green,green,0,255,THRESH_BINARY);
+//    threshold(red,red,200,255,THRESH_BINARY);
+
+    //merge(channels,dst);//通道合并
+
+    imshow("origin",img);
+//    imshow("blue",blue);
+//    imshow("green",green);
+//    imshow("red",red);
+ //   imshow("dst",dst);
+//    Img = QImage((blue.data), blue.cols, blue.rows, blue.cols*blue.channels(), QImage::Format_Indexed8);
+
+
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+
+void MainWindow::helptext(){
+    cout << "B——黑色\n";
+       cout << "H——灰色\n";
+       cout << "W——白色\n";
+       cout << "R——红色\n";
+       cout << "O——橙色\n";
+       cout << "Y——黄色\n";
+       cout << "G——绿色\n";
+       cout << "L——蓝色\n";
+       cout << "P——紫色\n";
+       cout << "输入要求识别的颜色对应的字母:" ;
+}
+
+void MainWindow::deal(char color)
+{
+
+        switch(color){
+    case 'B':
+        minh = 0;
+        maxh = 180;
+        mins = 0;
+        maxs = 255;
+        minv = 0;
+        maxv = 46;
+        break;
+    case 'H':
+        minh = 0;
+        maxh = 180;
+        mins = 0;
+        maxs = 43;
+        minv = 46;
+        maxv = 220;
+        break;
+    case 'W':
+        minh = 0;
+        maxh = 180;
+        mins = 0;
+        maxs = 30;
+        minv = 221;
+        maxv = 255;
+        break;
+
+    case 'R':
+        minh = 0;
+        maxh = 10;
+        mins = 43;
+        maxs = 255;
+        minv = 46;
+        maxv = 255;
+        break;
+
+    case 'O':
+        minh = 11;
+        maxh = 25;
+        mins = 43;
+        maxs = 255;
+        minv = 46;
+        maxv = 255;
+        break;
+    case 'Y':
+        minh = 26;
+        maxh = 25;
+        mins = 43;
+        maxs = 255;
+        minv = 46;
+        maxv = 255;
+        break;
+
+    case 'G':
+        minh = 35;
+        maxh = 77;
+        mins = 43;
+        maxs = 255;
+        minv = 46;
+        maxv = 255;
+        break;
+    case 'L':
+        minh = 100;
+        maxh = 124;
+        mins = 43;
+        maxs = 255;
+        minv = 46;
+        maxv = 255;
+        break;
+
+    case 'P':
+        minh = 125;
+        maxh = 155;
+        mins = 43;
+        maxs = 255;
+        minv = 46;
+        maxv = 255;
+        break;
+    default:
+        cout << "输入错误" << endl;
+        exit(0);
+    }
+
+}
