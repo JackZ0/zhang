@@ -1,10 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-using namespace cv;
-using namespace std;
-using std::vector;
-
 int minh,maxh,mins,maxs,minv,maxv;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -13,37 +9,26 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     //Mat img = imread(":/new/label/img/4.jpg");
-    Mat img = imread("F://qtpractise//pic//test1//img//6.png");
+    Mat img = imread("F://qtpractise//pic//test1//img//9.png");
     QImage Img;
     Mat fhsv,special;
     cvtColor(img,fhsv,COLOR_BGR2HSV);   //将图像转换为HSV模型
     deal('L');
     inRange(fhsv,Scalar(minh,mins,minv),Scalar(maxh,maxs,maxv),special);
-    imshow("ABC",special);
+    imshow("A",special);
 
+    Mat img1 = imread("F://qtpractise//pic//test1//img//2.png");
+    QImage Img1;
+    Mat fhsv1,special1;
+    cvtColor(img1,fhsv1,COLOR_BGR2HSV);   //将图像转换为HSV模型
+    deal('L');
+    inRange(fhsv1,Scalar(minh,mins,minv),Scalar(maxh,maxs,maxv),special1);
+    imshow("B",special1);
 
-    vector<Mat>channels;
-    split(img,channels);//通道分离
-
-
-//    Mat blue=channels.at(0);
-//    Mat green=channels.at(1);
-//    Mat red=channels.at(2);
-
-//    threshold(blue,blue,200,255,THRESH_BINARY);//二值化：大于200的赋值255，小于200的赋值0
-//    threshold(green,green,0,255,THRESH_BINARY);
-//    threshold(red,red,200,255,THRESH_BINARY);
-
-    //merge(channels,dst);//通道合并
-
-    imshow("origin",img);
-//    imshow("blue",blue);
-//    imshow("green",green);
-//    imshow("red",red);
- //   imshow("dst",dst);
-//    Img = QImage((blue.data), blue.cols, blue.rows, blue.cols*blue.channels(), QImage::Format_Indexed8);
-
-
+    double value = 0.0;
+    value = getMSSIM(img, img1);
+    qDebug() << value << endl;
+   // imshow("origin",img);
 }
 
 MainWindow::~MainWindow()
@@ -149,5 +134,100 @@ void MainWindow::deal(char color)
         cout << "输入错误" << endl;
         exit(0);
     }
+}
+//SSIM指数
+//https://blog.csdn.net/ecnu18918079120/article/details/60149864
+double MainWindow::getMSSIM(const Mat& i1, const Mat& i2)
+{
+    const double C1 = 6.5025, C2 = 58.5225;
+    /***************************** INITS **********************************/
+    int d = CV_32F;
 
+    Mat I1, I2;
+    i1.convertTo(I1, d);           // cannot calculate on one byte large values
+    i2.convertTo(I2, d);
+
+    Mat I2_2 = I2.mul(I2);        // I2^2
+    Mat I1_2 = I1.mul(I1);        // I1^2
+    Mat I1_I2 = I1.mul(I2);        // I1 * I2
+
+    /*************************** END INITS **********************************/
+
+    Mat mu1, mu2;   // PRELIMINARY COMPUTING
+    GaussianBlur(I1, mu1, Size(11, 11), 1.5);
+    GaussianBlur(I2, mu2, Size(11, 11), 1.5);
+
+    Mat mu1_2 = mu1.mul(mu1);
+    Mat mu2_2 = mu2.mul(mu2);
+    Mat mu1_mu2 = mu1.mul(mu2);
+
+    Mat sigma1_2, sigma2_2, sigma12;
+
+    GaussianBlur(I1_2, sigma1_2, Size(11, 11), 1.5);
+    sigma1_2 -= mu1_2;
+
+    GaussianBlur(I2_2, sigma2_2, Size(11, 11), 1.5);
+    sigma2_2 -= mu2_2;
+
+    GaussianBlur(I1_I2, sigma12, Size(11, 11), 1.5);
+    sigma12 -= mu1_mu2;
+
+    ///////////////////////////////// FORMULA ////////////////////////////////
+    Mat t1, t2, t3;
+
+    t1 = 2 * mu1_mu2 + C1;
+    t2 = 2 * sigma12 + C2;
+    t3 = t1.mul(t2);              // t3 = ((2*mu1_mu2 + C1).*(2*sigma12 + C2))
+
+    t1 = mu1_2 + mu2_2 + C1;
+    t2 = sigma1_2 + sigma2_2 + C2;
+    t1 = t1.mul(t2);               // t1 =((mu1_2 + mu2_2 + C1).*(sigma1_2 + sigma2_2 + C2))
+
+    Mat ssim_map;
+    divide(t3, t1, ssim_map);      // ssim_map =  t3./t1;
+
+    Scalar mssim = mean(ssim_map); // mssim = average of ssim map
+    return (mssim[0] + mssim[1] + mssim[2])/3;
+}
+
+
+//平均哈希算法
+int MainWindow::aHash(Mat matSrc1, Mat matSrc2)
+{
+    Mat matDst1, matDst2;
+    cv::resize(matSrc1, matDst1, cv::Size(8, 8), 0, 0, cv::INTER_CUBIC);
+    cv::resize(matSrc2, matDst2, cv::Size(8, 8), 0, 0, cv::INTER_CUBIC);
+
+    cv::cvtColor(matDst1, matDst1, CV_BGR2GRAY);
+    cv::cvtColor(matDst2, matDst2, CV_BGR2GRAY);
+
+    int iAvg1 = 0, iAvg2 = 0;
+    int arr1[64], arr2[64];
+
+    for (int i = 0; i < 8; i++)
+    {
+        uchar* data1 = matDst1.ptr<uchar>(i);
+        uchar* data2 = matDst2.ptr<uchar>(i);
+        int tmp = i * 8;
+        for (int j = 0; j < 8; j++)
+        {
+            int tmp1 = tmp + j;
+            arr1[tmp1] = data1[j] / 4 * 4;
+            arr2[tmp1] = data2[j] / 4 * 4;
+            iAvg1 += arr1[tmp1];
+            iAvg2 += arr2[tmp1];
+        }
+    }
+    iAvg1 /= 64;
+    iAvg2 /= 64;
+    for (int i = 0; i < 64; i++)
+    {
+        arr1[i] = (arr1[i] >= iAvg1) ? 1 : 0;
+        arr2[i] = (arr2[i] >= iAvg2) ? 1 : 0;
+    }
+    int iDiffNum = 0;
+    for (int i = 0; i < 64; i++)
+        if (arr1[i] != arr2[i])
+            ++iDiffNum;
+    return iDiffNum;
 }
